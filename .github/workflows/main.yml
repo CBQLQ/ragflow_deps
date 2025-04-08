@@ -1,4 +1,4 @@
-name: Build infiniflow/ragflow_deps:latest 
+name: Build infiniflow/ragflow_deps:latest [ARM64]
 
 on:
   push:
@@ -7,10 +7,13 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        architecture: [arm64]
     env:
       ACR_REGISTRY: crpi-oe4b7ny5megarokf.cn-guangzhou.personal.cr.aliyuncs.com
-      ACR_REPOSITORY: chenchunhui/ragflow_deps
-      DOCKER_TAG: latest
+      ACR_REPOSITORY: chenchunhui/ragflow
+      DOCKER_TAG: nightly
 
     steps:
     - name: Checkout code
@@ -29,14 +32,17 @@ jobs:
       run: |
         git clone https://github.com/infiniflow/ragflow.git
         cd ragflow/
+        sed -i 's/xgboost==1.5.0/xgboost==1.6.0/g' pyproject.toml
         uv run download_deps.py
 
     - name: Build Docker image
       run: |
         cd ragflow
-        docker build -f Dockerfile.deps \
+        docker build -f Dockerfile.deps -t infiniflow/ragflow_deps .
+        docker build -f Dockerfile \
           -t ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} .
         docker images
+        docker run --rm ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} uname -m
 
     - name: Login to ACR
       uses: aliyun/acr-login@v1
