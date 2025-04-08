@@ -1,0 +1,48 @@
+name: Build infiniflow/ragflow_deps:latest 
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-24.04
+    env:
+      ACR_REGISTRY: crpi-oe4b7ny5megarokf.cn-guangzhou.personal.cr.aliyuncs.com
+      ACR_REPOSITORY: chenchunhui/ragflow_deps
+      DOCKER_TAG: latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        git clone https://github.com/infiniflow/ragflow.git
+        cd ragflow/
+        pip install -r requirements.txt
+
+    - name: Run download_deps.py
+      run: uv run download_deps.py
+
+    - name: Build Docker image
+      run: |
+        docker build -f Dockerfile.deps \
+          -t ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} .
+        docker images
+
+    # - name: Login to ACR
+    #   uses: aliyun/acr-login@v1
+    #   with:
+    #     login-server: "https://${{ env.ACR_REGISTRY }}"
+    #     username: "${{ secrets.ACR_USERNAME }}"
+    #     password: "${{ secrets.ACR_PASSWORD }}"
+
+    # - name: Push Docker image to Alibaba Cloud
+    #   run: |
+    #     docker push ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }}
