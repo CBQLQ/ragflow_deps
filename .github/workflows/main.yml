@@ -23,12 +23,13 @@ jobs:
 
     - name: Install dependencies
       run: |
+        pip install -r requirements.txt
+  
+    - name: Run download_deps.py
+      run: |
         git clone https://github.com/infiniflow/ragflow.git
         cd ragflow/
-        pip install -r requirements.txt
-
-    - name: Run download_deps.py
-      run: uv run download_deps.py
+        uv run download_deps.py
 
     - name: Build Docker image
       run: |
