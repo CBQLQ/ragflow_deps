@@ -1,0 +1,4 @@
+uv
+huggingface-hub
+nltk
+argparse
