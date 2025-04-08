@@ -38,13 +38,13 @@ jobs:
           -t ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} .
         docker images
 
-    # - name: Login to ACR
-    #   uses: aliyun/acr-login@v1
-    #   with:
-    #     login-server: "https://${{ env.ACR_REGISTRY }}"
-    #     username: "${{ secrets.ACR_USERNAME }}"
-    #     password: "${{ secrets.ACR_PASSWORD }}"
+    - name: Login to ACR
+      uses: aliyun/acr-login@v1
+      with:
+        login-server: "https://${{ env.ACR_REGISTRY }}"
+        username: "${{ secrets.ACR_USERNAME }}"
+        password: "${{ secrets.ACR_PASSWORD }}"
 
-    # - name: Push Docker image to Alibaba Cloud
-    #   run: |
-    #     docker push ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }}
+    - name: Push Docker image to Alibaba Cloud
+      run: |
+        docker push ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }}
