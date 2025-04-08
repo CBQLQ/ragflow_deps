@@ -33,6 +33,7 @@ jobs:
 
     - name: Build Docker image
       run: |
+        cd ragflow
         docker build -f Dockerfile.deps \
           -t ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} .
         docker images
