@@ -1,4 +1,4 @@
-name: Build infiniflow/ragflow_deps:latest [ARM64]
+name: Download deps and upload artifact
 
 on:
   push:
@@ -7,9 +7,7 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        architecture: [arm64]
+    
     env:
       ACR_REGISTRY: crpi-oe4b7ny5megarokf.cn-guangzhou.personal.cr.aliyuncs.com
       ACR_REPOSITORY: chenchunhui/ragflow
@@ -32,25 +30,15 @@ jobs:
       run: |
         git clone https://github.com/infiniflow/ragflow.git
         cd ragflow/
-        sed -i 's/xgboost==1.5.0/xgboost==1.6.0/g' pyproject.toml
         uv run download_deps.py
+        tar zcvf deps.tar.gz \
+          chromedriver-linux64-121-0-6167-85 chrome-linux64-121-0-6167-85 cl100k_base.tiktoken libssl1.1_1.1.1f-1ubuntu2_amd64.deb libssl1.1_1.1.1f-1ubuntu2_arm64.deb tika-server-standard-3.0.0.jar tika-server-standard-3.0.0.jar.md5 libssl*.deb \
+          nltk_data \
+          huggingface.co
+        tar tf deps.tar.gz
 
-    - name: Build Docker image
-      run: |
-        cd ragflow
-        docker build -f Dockerfile.deps -t infiniflow/ragflow_deps .
-        docker build -f Dockerfile \
-          -t ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} .
-        docker images
-        docker run --rm ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }} uname -m
-
-    - name: Login to ACR
-      uses: aliyun/acr-login@v1
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        login-server: "https://${{ env.ACR_REGISTRY }}"
-        username: "${{ secrets.ACR_USERNAME }}"
-        password: "${{ secrets.ACR_PASSWORD }}"
-
-    - name: Push Docker image to Alibaba Cloud
-      run: |
-        docker push ${{ env.ACR_REGISTRY }}/${{ env.ACR_REPOSITORY }}:${{ env.DOCKER_TAG }}
+        name: deps
+        path: ragflow/deps.tar.gz
